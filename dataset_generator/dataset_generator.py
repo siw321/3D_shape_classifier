@@ -44,11 +44,16 @@ def generate_coordinates(bounds: tuple[float, float]) -> np.ndarray:
     return rotate_to_origin(np.asarray(xyz))
 
 def label_to_mesh(label: ShapeLabels) -> pr.Mesh:
+    material = pr.MetallicRoughnessMaterial(
+        metallicFactor=0.1,
+        roughnessFactor=0.5
+    )
+
     match label:
         case ShapeLabels.SPHERE:
-            return pr.Mesh.from_trimesh(tr.creation.icosphere(subdivisions=4, radius=1.0))
+            return pr.Mesh.from_trimesh(tr.creation.icosphere(subdivisions=4, radius=1.0), material=material)
         case ShapeLabels.CUBE:
-            return pr.Mesh.from_trimesh(tr.creation.box(extents=[2 ** 0.5 for _ in range(3)]))
+            return pr.Mesh.from_trimesh(tr.creation.box(extents=[2 ** 0.5 for _ in range(3)]), material=material)
         case ShapeLabels.TETRAHEDRON:
             vertices = np.array([
                 [1.0, 1.0, 1.0],
@@ -62,7 +67,7 @@ def label_to_mesh(label: ShapeLabels) -> pr.Mesh:
                 [0, 2, 3],
                 [1, 3, 2]
             ])
-            return pr.Mesh.from_trimesh(tr.creation.Trimesh(vertices=vertices, faces=faces))
+            return pr.Mesh.from_trimesh(tr.creation.Trimesh(vertices=vertices, faces=faces, material=material))
         case _:
             raise ValueError("Unknown mesh label")
 
@@ -71,9 +76,9 @@ class DatasetGenerator:
     def __init__(self, shape_label: ShapeLabels, save_path=''):
         self.save_path = save_path
 
-        self.__scene = pr.Scene(bg_color=[0, 0, 0])
+        self.__scene = pr.Scene(bg_color=[0, 0, 0], ambient_light=np.ones((3, 1)) * 0.03)
         self.__camera = self.__scene.add(pr.PerspectiveCamera(yfov=np.pi / 3.0))
-        self.__light = self.__scene.add(pr.DirectionalLight(color=np.ones(3), intensity=10.0))
+        self.__light = self.__scene.add(pr.DirectionalLight(color=np.ones(3), intensity=3.0))
         self.__shape = self.__scene.add(label_to_mesh(shape_label))
 
         self.renderer = pr.OffscreenRenderer(256, 256)
