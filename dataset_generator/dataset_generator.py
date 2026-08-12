@@ -12,9 +12,12 @@ from PIL import Image
 
 class ShapeLabels(Enum):
     SPHERE = 'sphere'
+    CUBE = 'cube'
+    TETRAHEDRON = 'tetrahedron'
 
     def __str__(self):
         return self.value
+
 
 def rotate_to_origin(position):
     forward = -position / np.linalg.norm(position)
@@ -36,7 +39,7 @@ def spherical_to_cartesian(radius: float, angles: tuple[float, float]) -> tuple[
             radius * np.cos(angles[0]))
 
 def generate_coordinates(bounds: tuple[float, float]) -> np.ndarray:
-    angles = (random.uniform(0, np.pi), random.uniform(0, np.pi))
+    angles = (random.uniform(0, np.pi * 0.8), random.uniform(0, np.pi * 0.8))
     xyz = spherical_to_cartesian(random.uniform(bounds[0], bounds[1]), angles)
     return rotate_to_origin(np.asarray(xyz))
 
@@ -44,16 +47,33 @@ def label_to_mesh(label: ShapeLabels) -> pr.Mesh:
     match label:
         case ShapeLabels.SPHERE:
             return pr.Mesh.from_trimesh(tr.creation.icosphere(subdivisions=4, radius=1.0))
+        case ShapeLabels.CUBE:
+            return pr.Mesh.from_trimesh(tr.creation.box(extents=[2 ** 0.5 for _ in range(3)]))
+        case ShapeLabels.TETRAHEDRON:
+            vertices = np.array([
+                [1.0, 1.0, 1.0],
+                [-1.0, -1.0, 1.0],
+                [-1.0, 1.0, -1.0],
+                [1.0, -1.0, -1.0]
+            ])
+            faces = np.array([
+                [0, 1, 2],
+                [0, 3, 1],
+                [0, 2, 3],
+                [1, 3, 2]
+            ])
+            return pr.Mesh.from_trimesh(tr.creation.Trimesh(vertices=vertices, faces=faces))
         case _:
             raise ValueError("Unknown mesh label")
+
 
 class DatasetGenerator:
     def __init__(self, shape_label: ShapeLabels, save_path=''):
         self.save_path = save_path
 
-        self.__scene = pr.Scene(bg_color=[0, 1, 0])
+        self.__scene = pr.Scene(bg_color=[0, 0, 0])
         self.__camera = self.__scene.add(pr.PerspectiveCamera(yfov=np.pi / 3.0))
-        self.__light = self.__scene.add(pr.DirectionalLight(color=np.ones(3), intensity=8.0))
+        self.__light = self.__scene.add(pr.DirectionalLight(color=np.ones(3), intensity=10.0))
         self.__shape = self.__scene.add(label_to_mesh(shape_label))
 
         self.renderer = pr.OffscreenRenderer(256, 256)
@@ -64,21 +84,13 @@ class DatasetGenerator:
         self.__label = label
         self.__shape.mesh = label_to_mesh(label)
 
-
-    def set_positions(self):
+    def set_positions(self) -> None:
         bounds = (3, 7)
-        pos = np.array([
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 3.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ])
-
         self.__camera.matrix = generate_coordinates(bounds)
         self.__light.matrix = generate_coordinates(bounds)
         self.__shape.matrix = generate_coordinates((0, bounds[0] - 2))
 
-    def generate_samples(self, number: int):
+    def generate_samples(self, number: int) -> None:
         Path(f'{self.save_path}/{self.__label}').mkdir(parents=True, exist_ok=True)
 
         for index in range(number):
