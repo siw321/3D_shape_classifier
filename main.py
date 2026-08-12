@@ -1,8 +1,3 @@
-import dataset_generator.dataset_generator as dsg
+from dataset_generator.dataset_generator import DatasetGenerator
 
-d = dsg.DatasetGenerator(dsg.ShapeLabels.TETRAHEDRON, save_path='datasets/gitignored')
-d.generate_samples(5)
-d.set_shape(dsg.ShapeLabels.SPHERE)
-d.generate_samples(5)
-d.set_shape(dsg.ShapeLabels.CUBE)
-d.generate_samples(5)
+DatasetGenerator(save_path='datasets/gitignored', generate_immediately=True)

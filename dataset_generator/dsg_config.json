@@ -1,0 +1,12 @@
+{
+    "default_output_directory": "datasets",
+    "train_test_split": 0.2,
+
+    "image_size": [256, 256],
+    "classes": ["cube", "sphere", "tetrahedron"],
+    "samples_per_class": 5,
+
+    "background_brightness": 0,
+    "light_brightness": 4.0,
+    "camera_distance": [3.0, 7.0]
+}
