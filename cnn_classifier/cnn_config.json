@@ -1,0 +1,8 @@
+{
+    "image_size": [256, 256],
+    "classes": ["cube", "sphere", "tetrahedron"],
+    "batch_size": 32,
+
+    "conv_layers": 2,
+    "dense_layers": 1
+}

@@ -122,7 +122,7 @@ class DatasetGenerator:
 
         self.__scene = pr.Scene(
             bg_color=np.ones((3, 1)) * self.__config['background_brightness'],
-            ambient_light=np.ones((3, 1)) * 0.03
+            ambient_light=np.ones((3, 1)) * self.__config['ambient_light']
         )
         self.__light = self.__scene.add(pr.DirectionalLight(
             color=np.ones(3),
