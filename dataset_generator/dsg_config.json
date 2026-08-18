@@ -4,10 +4,10 @@
 
     "image_size": [256, 256],
     "classes": ["cube", "sphere", "tetrahedron"],
-    "samples_per_class": 300,
+    "samples_per_class": 1000,
 
     "background_brightness": 0,
-    "ambient_light": 30,
+    "ambient_light": 0.03,
     "light_brightness": 4.0,
     "camera_distance": [3.0, 7.0]
 }
